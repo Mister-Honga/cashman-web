@@ -1,10 +1,9 @@
 import { shallowEqual, useSelector, useDispatch } from "react-redux";
 import { useEffect, useState} from "react";
 import ProtectedLayout from "../components/protectedLayout";
-import { Layout, Tabs, Card, Row, Col, Form, InputNumber, Button, Modal, Table, notification, Radio, Typography, message } from 'antd';
+import { Layout, Card, Row, Col, Form, InputNumber, Button, Modal, Table, Radio, Typography, message } from 'antd';
 import 'antd/dist/antd.css';
-
-import {getATMsAsync, updateATMAsync} from "../stores/modules/atms";
+import { getATMsAsync, updateATMAsync } from "../stores/modules/atms";
 
 const { Content } = Layout;
 const { Column } = Table;
@@ -15,11 +14,9 @@ export default function Home() {
     const [atmsData, setATMsData] = useState([]);
     const [depositData, setDepositData] = useState({});
     const [fixedDepositData, setFixedDepositData] = useState([]);
-    const [isModalVisible, setIsModalVisible ] = useState(false);
+    const [isDepositModalVisible, setIsDepositModalVisible ] = useState(false);
     const [selectedATM, setSelectedATM ] = useState("");
     const [withdrawableAmount, setWithdrawableAmount] = useState("");
-    const [withdrawErrMsg, setWithdrawErrMsg] = useState("");
-
     const [depositForm, withdrawForm] = Form.useForm();
 
     const { atms }  = useSelector((state) => {
@@ -81,18 +78,18 @@ export default function Home() {
     /** Deposit **/
     const handleDepositOK = ()=>{
         updateATM(true, depositData);
-        setIsModalVisible(false);
+        setIsDepositModalVisible(false);
     };
 
     const handleDepositCancel = ()=>{
         depositForm.resetFields();
-        setIsModalVisible(false);
+        setIsDepositModalVisible(false);
         setDepositData([]);
         setFixedDepositData([]);
     };
 
     const onFinishDeposit = async (value) =>{
-        setIsModalVisible(true);
+        setIsDepositModalVisible(true);
         const setArray= [];
         if(value){
             for (let valueKey in value) {
@@ -172,7 +169,7 @@ export default function Home() {
 
     function DepositModal(){
         return (
-            <Modal visible={isModalVisible} onOk={handleDepositOK} onCancel={handleDepositCancel} title="입금 확인">
+            <Modal visible={isDepositModalVisible} onOk={handleDepositOK} onCancel={handleDepositCancel} title="입금 확인">
                 <Table
                     dataSource={fixedDepositData}
                     rowKey="depositModal"
@@ -252,7 +249,6 @@ export default function Home() {
         const withdrawData = withdrawCalc(value.withdrawAmount);
         if(withdrawData.result) {
             updateATM(false, withdrawData.withdrawalAmount);
-            errorMessage(1, "success.")
         }
         else {
             errorMessage(1, "Error: The ATM's balance is low.");
@@ -282,6 +278,8 @@ export default function Home() {
         );
     }
 
+    /** ATM List**/
+
     function updateATM(type, data){ // true: deposit, false: withdraw
         let selectedATMData = atms.filter(function(e){return e.location === selectedATM});
         let setData = {...selectedATMData[0]};
@@ -306,7 +304,6 @@ export default function Home() {
             });
     }
 
-    /** ATM List**/
     function cellStyle(text){
         return {
             props: {
@@ -395,10 +392,6 @@ export default function Home() {
                 },
             ]
         },
-        {
-            title: "Action",
-            key: "action"
-        }
 
     ];
 
